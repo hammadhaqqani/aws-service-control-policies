@@ -1,0 +1,27 @@
+name: Validate SCPs
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Validate JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON files
+        run: |
+          errors=0
+          for f in $(find . -name "*.json" -not -path "./.github/*"); do
+            if ! python3 -m json.tool "$f" > /dev/null 2>&1; then
+              echo "Invalid JSON: $f"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "$errors invalid JSON files found"
+            exit 1
+          fi
+          echo "All JSON files valid"
