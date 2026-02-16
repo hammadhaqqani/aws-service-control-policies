@@ -1,55 +1,97 @@
-# AWS Organizational Service Control Policies
+# AWS Service Control Policies
 
-**Sad Panda** - There is no Cloudformation support for Organizations & Service Control Policies, so all of this must be done by hand.
+[![Validate SCPs](https://github.com/hammadhaqqani/aws-service-control-policies/actions/workflows/validate.yml/badge.svg)](https://github.com/hammadhaqqani/aws-service-control-policies/actions/workflows/validate.yml)
+[![GitHub Pages](https://github.com/hammadhaqqani/aws-service-control-policies/actions/workflows/pages.yml/badge.svg)](https://hammadhaqqani.github.io/aws-service-control-policies/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-ffdd00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/hammadhaqqani)
 
-## What Are Service Control Policies
-[Service Control Policies](url) (aka SCPs) are similar to IAM policies but are applied by a parent AWS Account to a child AWS account via [AWS Organizations](url). They can white or blacklist services so not even the Root Account or a full IAM Administrator in the account can call the specified API actions. 
+A collection of AWS Organizational Service Control Policies (SCPs) and deployment scripts for enforcing security guardrails across your AWS Organization.
 
-With regard to Root, [AWS Documentation States:](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scp.html)
+## What Are Service Control Policies?
 
-    No matter what SCPs are attached, the root user in an account can always do the following:
-    * Changing the root user's password
-    * Creating, updating, or deleting root access keys
-    * Enabling or disabling multi-factor authentication on the root user
-    * Creating, updating, or deleting x.509 keys for the root user
+[Service Control Policies](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html) (SCPs) are IAM-like policies applied by a parent AWS Account to child accounts via [AWS Organizations](https://aws.amazon.com/organizations/). They can whitelist or blacklist AWS services so that not even the Root Account or a full IAM Administrator can call the specified API actions.
 
-## Policies in this Repo
+> **Note:** No matter what SCPs are attached, the root user can always: change root password, manage root access keys, enable/disable MFA, and manage x.509 keys.
+
+## Policies
 
 ### Security Controls
-This is the basic Security Controls SCP you want to apply to all accounts (including the payer). It does the following:
 
-* Denies the deletion, update or stopping of CloudTrail
-* Denies the modification of the account contacts & settings via the Billing Portal and My Account Page
-* Denies the account from leaving the organization
+The base Security Controls SCP enforces the following across all accounts:
 
-Additional things that would be important are:
+- **Deny CloudTrail Tampering** — Prevents deletion, update, or stopping of CloudTrail
+- **Deny Billing Modifications** — Prevents modification of account contacts and settings
+- **Deny Leaving Organization** — Prevents accounts from leaving the AWS Organization
 
-* Limiting the ability to turn off guard-duty
+### Additional Policies to Consider
 
-### Other Sample policies to follow
-* Disable Consumer Features (ie Alexa for Business, WorkMail, etc)
-* Disable use of regions (if possible)
-* Disable the use of Managed AWS Policies
+- Disable consumer features (Alexa for Business, WorkMail, etc.)
+- Restrict usage of specific AWS regions
+- Disable use of AWS Managed IAM Policies
 
-There is an open question as to whether or not SCPs can support IAM Conditional Context Keys
+## Project Structure
 
-## Deployment Process
+```
+.
+├── Policies/                       # SCP JSON policy documents
+├── enable_scp.sh                   # Enable SCP usage in your Organization
+├── deploy_scp.sh                   # Deploy all SCPs from Policies directory
+├── apply_scp.sh                    # Attach Security Controls SCP to all accounts
+└── .github/workflows/
+    ├── validate.yml                # CI: JSON syntax validation
+    └── pages.yml                   # GitHub Pages deployment
+```
 
-You must first run the ```enable_scp.sh``` script to enable the usage of SCPs in your organization. 
+## Quick Start
 
-To deploy all the SCPs in the Policies directory, run:
+```bash
+# Clone the repo
+git clone https://github.com/hammadhaqqani/aws-service-control-policies.git
+cd aws-service-control-policies
 
-	./deploy_scp.sh
+# 1. Enable SCPs in your Organization
+./enable_scp.sh
 
-To attach the Security Controls SCP to all AWS accounts, run:
+# 2. Deploy all policies
+./deploy_scp.sh
 
-	./apply_scp.sh
+# 3. Attach Security Controls to all accounts
+./apply_scp.sh
+```
 
-you didn't run ```enable_scp.sh``` if you get the error: ```An error occurred (PolicyTypeNotEnabledException) when calling the AttachPolicy operation: This operation can be performed only for enabled policy types.``` 
+> If you get `PolicyTypeNotEnabledException`, you need to run `enable_scp.sh` first.
 
-### Prerequisites
-To run the scripts, you need the following:
+## Prerequisites
 
-* jq
-* awscli
-* credentials in the ~/.aws/credentials file or environment variables
+- AWS CLI configured with Organization admin credentials
+- `jq` for JSON processing
+- Access to AWS Organizations master account
+
+## CI/CD
+
+Every push triggers automated JSON validation via GitHub Actions, ensuring all SCP policy documents are syntactically valid.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+[MIT](LICENSE)
+
+## Author
+
+**Hammad Haqqani** — DevOps Architect & Cloud Engineer
+
+- Website: [hammadhaqqani.com](https://hammadhaqqani.com)
+- LinkedIn: [linkedin.com/in/haqqani](https://www.linkedin.com/in/haqqani)
+- Email: phaqqani@gmail.com
+
+---
+
+## Support
+
+If you find this useful, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/hammadhaqqani)
